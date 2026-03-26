@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:image_editor/screens/gallery_screen.dart';
 import 'package:image_editor/screens/load_screen.dart';
+import 'package:dartcv4/dartcv.dart' as cv;
 
 void main() {
   runApp(const MyApp());
+  final image = cv.Mat.zeros(3, 3, cv.MatType.CV_8UC3);
+  cv.randu(image, cv.Scalar.all(0.0), cv.Scalar(255.0));
+  print(image);
 }
 
 class MyApp extends StatelessWidget {

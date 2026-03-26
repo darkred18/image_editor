@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'dart:ui';
+import 'package:dartcv4/dartcv.dart' as cv;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 // import 'package:image_editor/edit/image_info.dart'; // 누락된 파일, 가정하여 사용
@@ -114,10 +115,10 @@ class _DetailScreenState extends State<DetailScreen> {
       context,
       PageRouteBuilder(
         transitionDuration: Duration(milliseconds: 250),
-        pageBuilder: (_, __, ___) => CanvasCropPage(
+        pageBuilder: (_, __, ___) => CanvasCropExtendPage(
           imageBytes: originalBytes,
           canvasSize: _canvasSize,
-          testImage: Image.asset(widget.imagePaths[_currentIndex]),
+          // testImage: Image.asset(widget.imagePaths[_currentIndex]),
         ),
         transitionsBuilder: (_, animation, __, child) {
           return FadeTransition(opacity: animation, child: child);
@@ -141,7 +142,7 @@ class _DetailScreenState extends State<DetailScreen> {
       context,
       PageRouteBuilder(
         transitionDuration: Duration(milliseconds: 300),
-        pageBuilder: (_, __, ___) => GridImageEditor(imageBytes: bytes),
+        pageBuilder: (_, __, ___) => GridEditorPage(imageBytes: bytes),
         transitionsBuilder: (_, animation, __, child) {
           return FadeTransition(
             opacity: animation,
@@ -236,9 +237,28 @@ class _DetailScreenState extends State<DetailScreen> {
   bool panelVisible = false;
   bool panelGrid = false;
 
+  List<Uint8List> _getTemp(List<String> imagePaths) {
+    List<Uint8List> images = [];
+    for (var i = 0; i < imagePaths.length; i++) {
+      final img = cv.imread(imagePaths[i], flags: cv.IMREAD_COLOR);
+      final gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY);
+      print("${img.rows}, ${img.cols}");
+      final (success, bytes) = cv.imencode(".jpg", gray);
+      images.add(bytes);
+    }
+    // cv.imwrite("test_cvtcolor.png", gray);
+
+    // 1. Mat을 jpg 포맷으로 인코딩하여 바이트 데이터로 변환
+    return images;
+
+    // return Image.memory(Uint8List.fromList(bytes), fit: BoxFit.contain);
+  }
+
   @override
   Widget build(BuildContext context) {
     final panelHeight = 260.0;
+    final List<Uint8List> processedImages = _getTemp(widget.imagePaths);
+
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(
@@ -262,11 +282,20 @@ class _DetailScreenState extends State<DetailScreen> {
             onPageChanged: (index) => setState(() => _currentIndex = index),
             builder: (context, index) {
               final imagePath = widget.imagePaths[index];
+
               return PhotoViewGalleryPageOptions(
-                imageProvider: FileImage(File(imagePath)),
-                minScale: PhotoViewComputedScale.contained,
-                maxScale: PhotoViewComputedScale.covered * 3.0,
-                heroAttributes: PhotoViewHeroAttributes(tag: imagePath),
+                //   imageProvider: FileImage(File(imagePath)),
+                //   minScale: PhotoViewComputedScale.contained,
+                //   maxScale: PhotoViewComputedScale.covered * 3.0,
+                //   heroAttributes: PhotoViewHeroAttributes(tag: imagePath),
+                // );
+                imageProvider: MemoryImage(
+                  processedImages[index],
+                ), // 메모리 이미지 사용
+                initialScale: PhotoViewComputedScale.contained,
+                minScale: PhotoViewComputedScale.contained * 0.8,
+                maxScale: PhotoViewComputedScale.covered * 2,
+                heroAttributes: PhotoViewHeroAttributes(tag: "image_$index"),
               );
             },
             scrollPhysics: const BouncingScrollPhysics(),
@@ -345,10 +374,7 @@ class _DetailScreenState extends State<DetailScreen> {
             ),
             IconButton(
               icon: const Icon(Icons.grid_3x3, color: Colors.white),
-              // onPressed: _openGridEditorPage,
-              onPressed: () {
-                setState(() => panelGrid = !panelGrid);
-              },
+              onPressed: _openGridEditorPage,
             ),
 
             // 정보: _toggleInfoPanel 호출
