@@ -134,6 +134,7 @@ class _CanvasCropExtendPageState extends State<CanvasCropExtendPage> {
               },
             ),
           ),
+          SizedBox(height: 10),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             crossAxisAlignment: CrossAxisAlignment.end,

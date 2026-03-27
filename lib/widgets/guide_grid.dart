@@ -3,247 +3,6 @@ import 'dart:typed_data';
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 
-// class GridEditorPage extends StatefulWidget {
-//   const GridEditorPage({super.key, required this.imageBytes});
-//   final Uint8List imageBytes;
-
-//   @override
-//   State<GridEditorPage> createState() => _GridEditorPageState();
-// }
-
-// class _GridEditorPageState extends State<GridEditorPage> {
-//   // 그리드 상태 변수
-//   int _rows = 3;
-//   int _columns = 3;
-//   bool _showGrid = false;
-//   double _strokeWidth = 1.0;
-//   Color _lineColor = Colors.white70;
-
-//   bool _isSquare = true;
-//   int _divisions = 5;
-//   bool _isWidthBase = true; // 기본 가로 기준
-//   bool _isPanelOpen = false;
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       backgroundColor: Colors.black, // 유화 집중도를 위한 다크 배경
-//       appBar: AppBar(
-//         title: const Text("구도 가이드 설정", style: TextStyle(fontSize: 18)),
-//         // backgroundColor: Colors.black,
-//         actions: [
-//           IconButton(
-//             icon: Icon(_showGrid ? Icons.visibility : Icons.visibility_off),
-//             onPressed: () => setState(() => _showGrid = !_showGrid),
-//           ),
-//         ],
-//       ),
-//       body: Column(
-//         children: [
-//           // [상단 이미지 영역] 패널이 올라오면 자동으로 크기가 조절됨
-//           Expanded(
-//             child: Container(
-//               padding: const EdgeInsets.all(20),
-//               alignment: Alignment.center,
-//               child: Stack(
-//                 children: [
-//                   // 1. 원본 이미지 레이어
-//                   Positioned.fill(
-//                     child: ClipRRect(
-//                       child: Image.memory(
-//                         widget.imageBytes, // Uint8List 데이터
-//                         fit: BoxFit.contain,
-//                       ),
-//                     ),
-//                   ),
-//                   // 2. 그리드 페인터 레이어
-//                   Positioned.fill(
-//                     child: _isSquare
-//                         ?
-//                           // 정방형 그리드
-//                           // AspectRatio(
-//                           //   aspectRatio: 1.0, // 실제 이미지의 비율 데이터가 있다면 그 값을 넣으세요
-//                           //   child: CustomPaint(
-//                           //     painter: SquareGridPainter(
-//                           //       divisions: _divisions,
-//                           //       isWidthBase: _isWidthBase,
-//                           //       lineColor: Colors.white70,
-//                           //       strokeWidth: 1.0,
-//                           //       showGrid: _showGrid,
-//                           //     ),
-//                           //   ),
-//                           // )
-//                           // 실제 이미지가 화면에서 차지하는 크기를 계산하는 간단한 방법
-// Center(
-//   child: AspectRatio(
-//     aspectRatio: imageWidth / imageHeight, // 실제 이미지의 가로세로 비율
-//     child: Stack(
-//       children: [
-//         Positioned.fill(child: Image.memory(_imageBytes!, fit: BoxFit.fill)),
-//         Positioned.fill(
-//           child: CustomPaint(
-//             painter: CenterBaseSquareGridPainter(
-//               divisions: _divisions,
-//               isWidthBase: _isWidthBase,
-//               lineColor: Colors.white70,
-//               strokeWidth: 1.0,
-//               showGrid: _showGrid,
-//             ),
-//           ),
-//         ),
-//       ],
-//     ),
-//   ),
-// )
-//                         : CustomPaint(
-//                             painter: GridPainter(
-//                               rows: _rows,
-//                               columns: _columns,
-//                               lineColor: _lineColor,
-//                               strokeWidth: _strokeWidth,
-//                               showGrid: _showGrid,
-//                             ),
-//                           ),
-//                   ),
-//                 ],
-//               ),
-//             ),
-//           ),
-
-//           // [하단 조절 패널] 애니메이션 처리
-//           AnimatedContainer(
-//             duration: const Duration(milliseconds: 300),
-//             height: _isPanelOpen ? 220 : 0,
-//             curve: Curves.easeOutCubic,
-//             decoration: BoxDecoration(
-//               color: Colors.grey[900]?.withOpacity(0.9),
-//               borderRadius: const BorderRadius.vertical(
-//                 top: Radius.circular(24),
-//               ),
-//               border: Border.all(color: Colors.white10),
-//             ),
-//             child: SingleChildScrollView(
-//               child: _isSquare
-//                   ? _buildSquareControlPanel()
-//                   : _buildControlPanel(),
-//             ),
-//           ),
-//         ],
-//       ),
-//       bottomNavigationBar: _buildBottomBar(),
-//     );
-//   }
-
-//   Widget _buildSquareControlPanel() {
-//     return Column(
-//       mainAxisAlignment: MainAxisAlignment.center,
-//       children: [
-//         Row(
-//           mainAxisAlignment: MainAxisAlignment.center,
-//           children: [
-//             const Text("기준: ", style: TextStyle(color: Colors.white)),
-//             ChoiceChip(
-//               label: const Text("가로"),
-//               selected: _isWidthBase,
-//               onSelected: (val) => setState(() => _isWidthBase = true),
-//             ),
-//             const SizedBox(width: 10),
-//             ChoiceChip(
-//               label: const Text("세로"),
-//               selected: !_isWidthBase,
-//               onSelected: (val) => setState(() => _isWidthBase = false),
-//             ),
-//           ],
-//         ),
-//         Slider(
-//           value: _divisions.toDouble(),
-//           min: 2,
-//           max: 20,
-//           divisions: 18,
-//           label: "$_divisions 칸",
-//           onChanged: (v) => setState(() => _divisions = v.toInt()),
-//         ),
-//       ],
-//     );
-//   }
-
-//   Widget _buildControlPanel() {
-//     return Padding(
-//       padding: const EdgeInsets.fromLTRB(24, 20, 24, 10),
-//       child: Column(
-//         children: [
-//           _buildSlider("가로 칸 수 (Columns)", _columns.toDouble(), 2, 10, (v) {
-//             setState(() => _columns = v.toInt());
-//           }),
-//           _buildSlider("세로 칸 수 (Rows)", _rows.toDouble(), 2, 10, (v) {
-//             setState(() => _rows = v.toInt());
-//           }),
-//           _buildSlider("선 두께 (Width)", _strokeWidth, 0.5, 5.0, (v) {
-//             setState(() => _strokeWidth = v);
-//           }),
-//         ],
-//       ),
-//     );
-//   }
-
-//   Widget _buildSlider(
-//     String label,
-//     double value,
-//     double min,
-//     double max,
-//     Function(double) onChanged,
-//   ) {
-//     return Column(
-//       crossAxisAlignment: CrossAxisAlignment.start,
-//       children: [
-//         Text(
-//           "$label: ${value.toStringAsFixed(value == value.toInt() ? 0 : 1)}",
-//           style: const TextStyle(color: Colors.white70, fontSize: 13),
-//         ),
-//         Slider(
-//           value: value,
-//           min: min,
-//           max: max,
-//           activeColor: Colors.blueAccent,
-//           inactiveColor: Colors.white10,
-//           onChanged: onChanged,
-//         ),
-//       ],
-//     );
-//   }
-
-//   Widget _buildBottomBar() {
-//     return BottomAppBar(
-//       color: Colors.black,
-//       height: 70,
-//       child: Row(
-//         mainAxisAlignment: MainAxisAlignment.center,
-//         children: [
-//           ElevatedButton.icon(
-//             style: ElevatedButton.styleFrom(
-//               backgroundColor: _isPanelOpen
-//                   ? Colors.blueAccent
-//                   : Colors.grey[800],
-//               foregroundColor: Colors.white,
-//               shape: RoundedRectangleBorder(
-//                 borderRadius: BorderRadius.circular(30),
-//               ),
-//             ),
-//             icon: const Icon(Icons.tune, size: 20),
-//             label: Text(_isPanelOpen ? "닫기" : "그리드 설정"),
-//             onPressed: () {
-//               setState(() {
-//                 _isPanelOpen = !_isPanelOpen;
-//                 if (_isPanelOpen) _showGrid = true; // 설정 창 열 때 그리드 자동 켬
-//               });
-//             },
-//           ),
-//         ],
-//       ),
-//     );
-//   }
-// }
-
 // 2. 그리드 에디터 페이지 위젯
 class GridEditorPage extends StatefulWidget {
   final Uint8List imageBytes;
@@ -261,6 +20,17 @@ class _GridEditorPageState extends State<GridEditorPage> {
   bool _isPanelOpen = false;
   double _aspectRatio = 1.0;
   bool _isLoaded = false;
+
+  Color _lineColor = Colors.white60; // 기본값
+  // 추천 팔레트 리스트
+  final List<Color> _palette = [
+    Colors.white60,
+    Colors.black54,
+    Colors.redAccent,
+    Colors.yellowAccent,
+    Colors.cyanAccent,
+    Colors.lightGreenAccent,
+  ];
 
   @override
   void initState() {
@@ -326,7 +96,7 @@ class _GridEditorPageState extends State<GridEditorPage> {
                                   painter: CenterBaseSquareGridPainter(
                                     divisions: _divisions,
                                     isWidthBase: _isWidthBase,
-                                    lineColor: Colors.white60,
+                                    lineColor: _lineColor,
                                     strokeWidth: 1.0,
                                     showGrid: _showGrid,
                                   ),
@@ -360,11 +130,95 @@ class _GridEditorPageState extends State<GridEditorPage> {
     );
   }
 
+  Widget _buildColorPicker() {
+    return Row(
+      children: [
+        const Text("선 색상", style: TextStyle(color: Colors.white70)),
+        const SizedBox(width: 15),
+        // Row 안에서 ListView를 쓸 때는 ListView를 Expanded로 감싸야 합니다.
+        Expanded(
+          child: SizedBox(
+            height: 40,
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              itemCount: _palette.length,
+              itemBuilder: (context, index) {
+                // 위에서 수정한 고정 크기 Container 코드 삽입
+                return _buildColorItem(index);
+              },
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  //   // 2. 컨트롤 패널 빌더
+  // Widget _buildControlPanel() {
+  //   return Padding(
+  //     padding: const EdgeInsets.fromLTRB(24, 20, 24, 20),
+  //     child: Column(
+  //       mainAxisSize: MainAxisSize.min,
+  //       crossAxisAlignment: CrossAxisAlignment.start,
+  //       children: [
+  //         // --- 색상 선택 섹션 (Wrap 사용으로 에러 해결) ---
+  //         const Text("선 색상", style: TextStyle(color: Colors.white70, fontSize: 13)),
+  //         const SizedBox(height: 12),
+  //         Wrap(
+  //           spacing: 12, // 가로 간격
+  //           runSpacing: 12, // 세로 간격 (줄바꿈 대비)
+  //           children: _palette.map((color) {
+  //             bool isSelected = _lineColor == color;
+  //             return GestureDetector(
+  //               onTap: () => setState(() => _lineColor = color),
+  //               child: Container(
+  //                 width: 38,
+  //                 height: 38,
+  //                 decoration: BoxDecoration(
+  //                   color: color,
+  //                   shape: BoxShape.circle,
+  //                   border: Border.all(
+  //                     color: isSelected ? Colors.blueAccent : Colors.white10,
+  //                     width: isSelected ? 3 : 1,
+  //                   ),
+  //                   boxShadow: isSelected ? [
+  //                     BoxShadow(color: Colors.blueAccent.withOpacity(0.4), blurRadius: 8)
+  //                   ] : null,
+  //                 ),
+  //                 child: isSelected
+  //                     ? const Icon(Icons.check, size: 20, color: Colors.white)
+  //                     : null,
+  //               ),
+  //             );
+  //           }).toList(),
+  //         ),
+
+  //         const SizedBox(height: 30),
+
+  //         // --- 분할 슬라이더 섹션 ---
+  //         Text("그리드 분할: $_divisions", style: const TextStyle(color: Colors.white70, fontSize: 13)),
+  //         SliderTheme(
+  //           data: SliderTheme.of(context).copyWith(
+  //             activeTrackColor: _lineColor.withOpacity(0.8), // 선 색상과 슬라이더 동기화
+  //             thumbColor: Colors.white,
+  //           ),
+  //           child: Slider(
+  //             value: _divisions.toDouble(),
+  //             min: 2, max: 20, divisions: 18,
+  //             onChanged: (v) => setState(() => _divisions = v.toInt()),
+  //           ),
+  //         ),
+  //       ],
+  //     ),
+  //   );
+  // }
+
   Widget _buildControlPanel() {
     return Padding(
       padding: const EdgeInsets.all(24.0),
       child: Column(
         children: [
+          _buildColorPicker(), // 색상 선택기 추가
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -389,7 +243,7 @@ class _GridEditorPageState extends State<GridEditorPage> {
               const Text("분할", style: TextStyle(color: Colors.white70)),
               Expanded(
                 child: Slider(
-                  activeColor: Colors.blue.shade500,
+                  activeColor: _lineColor.withAlpha(200), // 선택된 선 색상을 슬라이더에 반영
                   inactiveColor: Colors.grey,
                   thumbColor: Colors.blue,
                   value: _divisions.toDouble(),
@@ -429,6 +283,30 @@ class _GridEditorPageState extends State<GridEditorPage> {
             onPressed: () => setState(() => _isPanelOpen = !_isPanelOpen),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildColorItem(int index) {
+    bool isSelected = _lineColor == _palette[index];
+    return GestureDetector(
+      onTap: () => setState(() => _lineColor = _palette[index]),
+      child: Container(
+        // Expanded를 빼고 Container만 사용하세요
+        margin: const EdgeInsets.only(right: 10),
+        width: 35, // 여기서 고정 너비를 주었으므로 이미 충분합니다
+        height: 35,
+        decoration: BoxDecoration(
+          color: _palette[index],
+          shape: BoxShape.circle, // 유화 앱에 어울리는 원형 버튼
+          border: Border.all(
+            color: isSelected ? Colors.blueAccent : Colors.white24,
+            width: isSelected ? 3 : 1,
+          ),
+        ),
+        child: isSelected
+            ? const Icon(Icons.check, size: 18, color: Colors.white)
+            : null,
       ),
     );
   }

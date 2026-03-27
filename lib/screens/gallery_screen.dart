@@ -16,55 +16,13 @@ class GalleryScreen extends StatefulWidget {
 }
 
 class _GalleryScreenState extends State<GalleryScreen> {
-  // List<String> imagePaths = [];
-  // List<XFile> _images = [];
-  // final ImagePicker _picker = ImagePicker();
-
-  // Future<void> _pickImages() async {
-  //   // ✅ 최신 image_picker API
-  //   final List<XFile> images = await _picker.pickMultiImage(
-  //     imageQuality: 85, // 선택적 (압축 품질)
-  //     maxWidth: 2048, // 선택적 (리사이즈)
-  //   );
-
-  //   if (images.isNotEmpty) {
-  //     setState(() {
-  //       _images = images;
-  //     });
-  //   }
-  // }
-
-  // ----- assets/images 폴더의 이미지 경로들을 불러오는 비동기 함수 -----
-  // Future<void> _loadImages() async {
-  //   final images = await loadAssetImages(); // ✅ await로 실제 리스트 가져오기
-  //   setState(() {
-  //     imagePaths = images;
-  //   });
-  // }
-
-  // @override
-  // void initState() {
-  //   super.initState();
-  //   // 이미지 로드
-  //   _loadImages();
-  // }
-  // ----- assets/images 폴더의 이미지 경로들을 불러오는 비동기 함수 -----
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(
         title: const Text('사진 선택', style: TextStyle(color: Colors.white70)),
-        // actions: [
-        //   IconButton(
-        //     icon: const Icon(Icons.add_photo_alternate_outlined),
-        //     color: Colors.white70,
-        //     onPressed: _pickImages, // ✅ 오른쪽 상단 버튼으로 이동
-        //     tooltip: '사진 추가',
-        //   ),
-        // ],
-        backgroundColor: Colors.black,
+        backgroundColor: Colors.amber.shade900,
       ),
       body: Padding(
         padding: const EdgeInsets.all(4),
@@ -147,25 +105,3 @@ class _GalleryScreenState extends State<GalleryScreen> {
     );
   }
 }
-
-// Future<List<String>> loadAssetImages() async {
-//   final manifestJson = await rootBundle.loadString('AssetManifest.json');
-//   final Map<String, dynamic> manifest = json.decode(manifestJson);
-//   final imagePaths = manifest.keys
-//       .where((path) => path.startsWith('assets/images/'))
-//       .toList();
-//   return imagePaths;
-// }
-
-// Future<bool> isSimulator() async {
-//   if (Platform.isIOS) {
-//     final deviceInfo = DeviceInfoPlugin();
-//     final iosInfo = await deviceInfo.iosInfo;
-//     return !iosInfo.isPhysicalDevice; // true면 시뮬레이터
-//   } else if (Platform.isAndroid) {
-//     final deviceInfo = DeviceInfoPlugin();
-//     final androidInfo = await deviceInfo.androidInfo;
-//     return !androidInfo.isPhysicalDevice; // true면 에뮬레이터
-//   }
-//   return false; // iOS/Android 외 환경은 기본 false
-// }

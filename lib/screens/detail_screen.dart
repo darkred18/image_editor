@@ -10,7 +10,7 @@ import 'package:image_editor/screens/crop_image_extend.dart';
 
 // RemotePage 경로
 import 'package:image_editor/widgets/drag_bottom_slide.dart';
-import 'package:image_editor/widgets/grid_widgets.dart';
+import 'package:image_editor/widgets/opencv_editor.dart';
 import 'package:image_editor/widgets/guide_grid.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:photo_view/photo_view_gallery.dart';
@@ -277,6 +277,9 @@ class _DetailScreenState extends State<DetailScreen> {
       body: Stack(
         children: [
           PhotoViewGallery.builder(
+            backgroundDecoration: const BoxDecoration(
+              color: Colors.black, // 원하는 색상으로 변경 (예: Colors.grey[900])
+            ),
             itemCount: widget.imagePaths.length,
             pageController: _pageController,
             onPageChanged: (index) => setState(() => _currentIndex = index),
@@ -284,70 +287,72 @@ class _DetailScreenState extends State<DetailScreen> {
               final imagePath = widget.imagePaths[index];
 
               return PhotoViewGalleryPageOptions(
-                //   imageProvider: FileImage(File(imagePath)),
-                //   minScale: PhotoViewComputedScale.contained,
-                //   maxScale: PhotoViewComputedScale.covered * 3.0,
-                //   heroAttributes: PhotoViewHeroAttributes(tag: imagePath),
-                // );
-                imageProvider: MemoryImage(
-                  processedImages[index],
-                ), // 메모리 이미지 사용
-                initialScale: PhotoViewComputedScale.contained,
-                minScale: PhotoViewComputedScale.contained * 0.8,
-                maxScale: PhotoViewComputedScale.covered * 2,
-                heroAttributes: PhotoViewHeroAttributes(tag: "image_$index"),
+                imageProvider: FileImage(File(imagePath)),
+                minScale: PhotoViewComputedScale.contained,
+                maxScale: PhotoViewComputedScale.covered * 3.0,
+                heroAttributes: PhotoViewHeroAttributes(tag: imagePath),
               );
+
+              //----------------------------------
+              // open cv 를 이용한 이미지 변환
+              // imageProvider: MemoryImage(
+              //   processedImages[index],
+              // ), // 메모리 이미지 사용
+              // initialScale: PhotoViewComputedScale.contained,
+              // minScale: PhotoViewComputedScale.contained * 0.8,
+              // maxScale: PhotoViewComputedScale.covered * 2,
+              // heroAttributes: PhotoViewHeroAttributes(tag: "image_$index"),
+              // );
             },
             scrollPhysics: const BouncingScrollPhysics(),
-            backgroundDecoration: const BoxDecoration(color: Colors.grey),
           ),
 
           // ★ 정보 패널
-          // AnimatedPositioned(
-          //   duration: const Duration(milliseconds: 300),
-          //   curve: Curves.easeInOut,
-          //   left: 0,
-          //   right: 0,
-          //   bottom: showInfo ? 0 : -180, // ← 숨겨졌다가 올라옴
-          //   child: Container(
-          //     height: 180,
-          //     padding: const EdgeInsets.all(16),
-          //     decoration: const BoxDecoration(
-          //       color: Colors.red,
-          //       borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-          //     ),
-          //     child: info == null
-          //         ? const Center(child: CircularProgressIndicator()) // 정보 로딩 중
-          //         : Column(
-          //             crossAxisAlignment: CrossAxisAlignment.start,
-          //             children: [
-          //               Text(
-          //                 "Name: ${info!.fileName}",
-          //                 style: const TextStyle(color: Colors.white),
-          //               ),
-          //               const SizedBox(height: 6),
-          //               Text(
-          //                 "Size: ${info!.fileSize}",
-          //                 style: const TextStyle(color: Colors.white),
-          //               ),
-          //               const SizedBox(height: 6),
-          //               Text(
-          //                 "Resolution: ${info!.width} x ${info!.height}",
-          //                 style: const TextStyle(color: Colors.white),
-          //               ),
-          //             ],
-          //           ),
-          //   ),
-          // ),
+          AnimatedPositioned(
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeInOut,
+            left: 0,
+            right: 0,
+            bottom: showInfo ? 0 : -180, // ← 숨겨졌다가 올라옴
+            child: Container(
+              height: 180,
+              padding: const EdgeInsets.all(16),
+              decoration: const BoxDecoration(
+                color: Colors.red,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+              ),
+              child: info == null
+                  ? const Center(child: CircularProgressIndicator()) // 정보 로딩 중
+                  : Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          "Name: ${info!.fileName}",
+                          style: const TextStyle(color: Colors.white),
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          "Size: ${info!.fileSize}",
+                          style: const TextStyle(color: Colors.white),
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          "Resolution: ${info!.width} x ${info!.height}",
+                          style: const TextStyle(color: Colors.white),
+                        ),
+                      ],
+                    ),
+            ),
+          ),
           // // 📌 iOS 스타일 슬라이드 패널
-          // AnimatedPositioned(
-          //   duration: const Duration(milliseconds: 300),
-          //   curve: Curves.easeOutCubic,
-          //   left: 0,
-          //   right: 0,
-          //   bottom: panelVisible ? 0 : -panelHeight,
-          //   child: _buildIOSPanel(panelHeight),
-          // ),
+          AnimatedPositioned(
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeOutCubic,
+            left: 0,
+            right: 0,
+            bottom: panelVisible ? 0 : -panelHeight,
+            child: _buildIOSPanel(panelHeight),
+          ),
           if (panelGrid)
             IOSDraggablePanel(
               // scrollController: controller,
@@ -392,7 +397,11 @@ class _DetailScreenState extends State<DetailScreen> {
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (_) => GridViewPage()),
+                  MaterialPageRoute(
+                    builder: (_) => OpenCVEditorPage(
+                      imagePath: widget.imagePaths[_currentIndex],
+                    ),
+                  ),
                 );
                 // setState(() => panelVisible = !panelVisible);
               },
