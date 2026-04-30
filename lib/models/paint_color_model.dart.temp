@@ -1,0 +1,10 @@
+class PaintColor {
+  final String name;
+  final List<double> lab;
+
+  PaintColor({required this.name, required this.lab});
+
+  factory PaintColor.fromJson(Map<String, dynamic> json) {
+    return PaintColor(name: json['name'], lab: List<double>.from(json['lab']));
+  }
+}

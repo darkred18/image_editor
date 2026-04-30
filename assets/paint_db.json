@@ -1,0 +1,542 @@
+[
+    {
+        "name": "Titanium White",
+        "pigment": "PW6",
+        "lab": [
+            96,
+            0,
+            2
+        ]
+    },
+    {
+        "name": "Zinc White",
+        "pigment": "PW4",
+        "lab": [
+            94,
+            0,
+            1
+        ]
+    },
+    {
+        "name": "Ivory Black",
+        "pigment": "PBk9",
+        "lab": [
+            18,
+            0,
+            0
+        ]
+    },
+    {
+        "name": "Payne's Grey",
+        "pigment": "PB29/PBk6",
+        "lab": [
+            35,
+            -2,
+            -8
+        ]
+    },
+    {
+        "name": "Yellow Ochre",
+        "pigment": "PY42",
+        "lab": [
+            67,
+            8,
+            42
+        ]
+    },
+    {
+        "name": "Raw Sienna",
+        "pigment": "PBr7",
+        "lab": [
+            61,
+            14,
+            38
+        ]
+    },
+    {
+        "name": "Burnt Sienna",
+        "pigment": "PR101",
+        "lab": [
+            42,
+            26,
+            31
+        ]
+    },
+    {
+        "name": "Burnt Umber",
+        "pigment": "PBr7",
+        "lab": [
+            30,
+            12,
+            18
+        ]
+    },
+    {
+        "name": "Raw Umber",
+        "pigment": "PBr7",
+        "lab": [
+            38,
+            8,
+            22
+        ]
+    },
+    {
+        "name": "Red Ochre",
+        "pigment": "PR101",
+        "lab": [
+            48,
+            24,
+            24
+        ]
+    },
+    {
+        "name": "Lemon Yellow",
+        "pigment": "PY3",
+        "lab": [
+            88,
+            -5,
+            82
+        ]
+    },
+    {
+        "name": "Cadmium Yellow Light",
+        "pigment": "PY37",
+        "lab": [
+            84,
+            -2,
+            75
+        ]
+    },
+    {
+        "name": "Cadmium Yellow Deep",
+        "pigment": "PY35",
+        "lab": [
+            74,
+            12,
+            68
+        ]
+    },
+    {
+        "name": "Naples Yellow",
+        "pigment": "PY41",
+        "lab": [
+            82,
+            4,
+            38
+        ]
+    },
+    {
+        "name": "Cadmium Orange",
+        "pigment": "PO20",
+        "lab": [
+            62,
+            42,
+            60
+        ]
+    },
+    {
+        "name": "Cadmium Red Light",
+        "pigment": "PR108",
+        "lab": [
+            52,
+            62,
+            42
+        ]
+    },
+    {
+        "name": "Cadmium Red Deep",
+        "pigment": "PR108",
+        "lab": [
+            41,
+            58,
+            28
+        ]
+    },
+    {
+        "name": "Alizarin Crimson",
+        "pigment": "PR83",
+        "lab": [
+            32,
+            48,
+            12
+        ]
+    },
+    {
+        "name": "Crimson Lake",
+        "pigment": "PR177",
+        "lab": [
+            38,
+            52,
+            18
+        ]
+    },
+    {
+        "name": "Vermilion Hue",
+        "pigment": "PR48",
+        "lab": [
+            55,
+            55,
+            35
+        ]
+    },
+    {
+        "name": "Rose Madder",
+        "pigment": "PR83",
+        "lab": [
+            60,
+            42,
+            8
+        ]
+    },
+    {
+        "name": "Ultramarine Blue",
+        "pigment": "PB29",
+        "lab": [
+            32,
+            18,
+            -52
+        ]
+    },
+    {
+        "name": "Cobalt Blue",
+        "pigment": "PB28",
+        "lab": [
+            48,
+            8,
+            -42
+        ]
+    },
+    {
+        "name": "Cerulean Blue",
+        "pigment": "PB35",
+        "lab": [
+            58,
+            -8,
+            -28
+        ]
+    },
+    {
+        "name": "Prussian Blue",
+        "pigment": "PB27",
+        "lab": [
+            22,
+            -4,
+            -38
+        ]
+    },
+    {
+        "name": "Viridian",
+        "pigment": "PG18",
+        "lab": [
+            42,
+            -38,
+            18
+        ]
+    },
+    {
+        "name": "Sap Green",
+        "pigment": "PG7/PY42",
+        "lab": [
+            38,
+            -28,
+            24
+        ]
+    },
+    {
+        "name": "Olive Green",
+        "pigment": "PG7/PY42",
+        "lab": [
+            45,
+            -18,
+            28
+        ]
+    },
+    {
+        "name": "Dioxazine Purple",
+        "pigment": "PV23",
+        "lab": [
+            28,
+            32,
+            -28
+        ]
+    },
+    {
+        "name": "Neutral Grey",
+        "pigment": "PW6/PBk7",
+        "lab": [
+            55,
+            0,
+            0
+        ]
+    },
+    {
+        "name": "Neutral Grey Light",
+        "pigment": "PW6/PBk7",
+        "lab": [
+            72,
+            0,
+            0
+        ]
+    },
+    {
+        "name": "Neutral Grey Medium",
+        "pigment": "PW6/PBk7",
+        "lab": [
+            55,
+            0,
+            0
+        ]
+    },
+    {
+        "name": "Neutral Grey Dark",
+        "pigment": "PBk7",
+        "lab": [
+            32,
+            0,
+            0
+        ]
+    },
+    {
+        "name": "Warm Grey",
+        "pigment": "PW6/PBr7",
+        "lab": [
+            58,
+            4,
+            8
+        ]
+    },
+    {
+        "name": "Cool Grey",
+        "pigment": "PW6/PB29",
+        "lab": [
+            56,
+            -2,
+            -8
+        ]
+    },
+    {
+        "name": "Naples Yellow Deep",
+        "pigment": "PY41",
+        "lab": [
+            76,
+            8,
+            42
+        ]
+    },
+    {
+        "name": "Naples Yellow Light",
+        "pigment": "PY41/PW6",
+        "lab": [
+            88,
+            2,
+            28
+        ]
+    },
+    {
+        "name": "Buff Titanium",
+        "pigment": "PW6/PBr24",
+        "lab": [
+            81,
+            6,
+            18
+        ]
+    },
+    {
+        "name": "Unbleached Titanium",
+        "pigment": "PW6/PY42",
+        "lab": [
+            84,
+            4,
+            22
+        ]
+    },
+    {
+        "name": "Indian Yellow",
+        "pigment": "PY110",
+        "lab": [
+            72,
+            10,
+            62
+        ]
+    },
+    {
+        "name": "Hansa Yellow Medium",
+        "pigment": "PY74",
+        "lab": [
+            82,
+            -4,
+            74
+        ]
+    },
+    {
+        "name": "Transparent Yellow Oxide",
+        "pigment": "PY42",
+        "lab": [
+            64,
+            12,
+            52
+        ]
+    },
+    {
+        "name": "Permanent Rose",
+        "pigment": "PV19",
+        "lab": [
+            58,
+            48,
+            2
+        ]
+    },
+    {
+        "name": "Quinacridone Magenta",
+        "pigment": "PR122",
+        "lab": [
+            44,
+            62,
+            -8
+        ]
+    },
+    {
+        "name": "Cobalt Violet",
+        "pigment": "PV14",
+        "lab": [
+            48,
+            26,
+            -22
+        ]
+    },
+    {
+        "name": "Mauve",
+        "pigment": "PV23",
+        "lab": [
+            54,
+            18,
+            -12
+        ]
+    },
+    {
+        "name": "Phthalo Blue",
+        "pigment": "PB15:3",
+        "lab": [
+            38,
+            -6,
+            -48
+        ]
+    },
+    {
+        "name": "Indigo",
+        "pigment": "PB60/PBk7",
+        "lab": [
+            24,
+            4,
+            -26
+        ]
+    },
+    {
+        "name": "Turquoise Blue",
+        "pigment": "PB16",
+        "lab": [
+            62,
+            -24,
+            -18
+        ]
+    },
+    {
+        "name": "Teal",
+        "pigment": "PB15/PG7",
+        "lab": [
+            46,
+            -28,
+            -8
+        ]
+    },
+    {
+        "name": "Hooker's Green",
+        "pigment": "PY110/PG7",
+        "lab": [
+            42,
+            -32,
+            28
+        ]
+    },
+    {
+        "name": "Terre Verte",
+        "pigment": "PG23",
+        "lab": [
+            52,
+            -18,
+            16
+        ]
+    },
+    {
+        "name": "Permanent Green Light",
+        "pigment": "PG7/PY3",
+        "lab": [
+            64,
+            -42,
+            52
+        ]
+    },
+    {
+        "name": "Permanent Green Deep",
+        "pigment": "PG7",
+        "lab": [
+            34,
+            -38,
+            18
+        ]
+    },
+    {
+        "name": "Venetian Red",
+        "pigment": "PR101",
+        "lab": [
+            44,
+            36,
+            24
+        ]
+    },
+    {
+        "name": "English Red",
+        "pigment": "PR101",
+        "lab": [
+            48,
+            28,
+            22
+        ]
+    },
+    {
+        "name": "Transparent Red Oxide",
+        "pigment": "PR101",
+        "lab": [
+            36,
+            30,
+            20
+        ]
+    },
+    {
+        "name": "Van Dyke Brown",
+        "pigment": "PBr8",
+        "lab": [
+            24,
+            8,
+            12
+        ]
+    },
+    {
+        "name": "Sepia",
+        "pigment": "PBr7/PBk7",
+        "lab": [
+            28,
+            6,
+            8
+        ]
+    },
+    {
+        "name": "Titanium Buff",
+        "pigment": "PW6/PY42",
+        "lab": [
+            86,
+            3,
+            16
+        ]
+    }
+]

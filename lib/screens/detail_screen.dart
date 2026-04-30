@@ -7,13 +7,17 @@ import 'package:flutter/services.dart';
 // import 'package:image_editor/edit/image_info.dart'; // 누락된 파일, 가정하여 사용
 import 'package:image_editor/screens/crop_image.dart'; // CanvasCropPage 경로// ImageEditorPage 경로
 import 'package:image_editor/screens/crop_image_extend.dart';
+import 'package:image_editor/screens/opencv/image_simplification_screen.dart';
+import 'package:image_editor/screens/opencv/roi_picker_screen.dart';
 
 // RemotePage 경로
 import 'package:image_editor/widgets/drag_bottom_slide.dart';
-import 'package:image_editor/widgets/opencv_editor.dart';
+
 import 'package:image_editor/widgets/guide_grid.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:photo_view/photo_view_gallery.dart';
+
+import 'opencv/perspective_crop_screen.dart';
 
 // 임시 정의: 실제 프로젝트 파일에 맞춰 이 부분을 수정해야 합니다.
 class ImageInfoData {
@@ -385,10 +389,42 @@ class _DetailScreenState extends State<DetailScreen> {
             // 정보: _toggleInfoPanel 호출
             IconButton(
               icon: const Icon(Icons.info_outline_rounded, color: Colors.white),
-              onPressed: _toggleInfoPanel,
+              // onPressed: _toggleInfoPanel,
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => AdvancedRoiPicker(
+                      imageBytes: _getConvertImage(
+                        widget.imagePaths[_currentIndex],
+                      ),
+                    ),
+                  ),
+                );
+                // setState(() => panelVisible = !panelVisible);
+              },
             ),
 
-            // 리모트 페이지
+            // 크롭 페이지
+            // IconButton(
+            //   icon: const Icon(
+            //     Icons.text_snippet_outlined,
+            //     color: Colors.white,
+            //   ),
+            //   onPressed: () {
+            //     Navigator.push(
+            //       context,
+            //       MaterialPageRoute(
+            //         builder: (_) => PerspectiveCropScreen(
+            //           imageBytes: _getConvertImage(
+            //             widget.imagePaths[_currentIndex],
+            //           ),
+            //         ),
+            //       ),
+            //     );
+            //     // setState(() => panelVisible = !panelVisible);
+            //   },
+            // ),
             IconButton(
               icon: const Icon(
                 Icons.text_snippet_outlined,
@@ -398,8 +434,10 @@ class _DetailScreenState extends State<DetailScreen> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (_) => OpenCVEditorPage(
-                      imagePath: widget.imagePaths[_currentIndex],
+                    builder: (_) => ImageSimplificationScreen(
+                      imageBytes: _getConvertImage(
+                        widget.imagePaths[_currentIndex],
+                      ),
                     ),
                   ),
                 );
@@ -410,5 +448,13 @@ class _DetailScreenState extends State<DetailScreen> {
         ),
       ),
     );
+  }
+
+  Uint8List _getConvertImage(String imagePath) {
+    final mat = cv.imread(imagePath);
+    final (success, bytes) = cv.imencode(".jpg", mat);
+
+    mat.dispose();
+    return bytes;
   }
 }

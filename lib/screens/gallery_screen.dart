@@ -1,8 +1,4 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
-
-import 'package:flutter/services.dart' show rootBundle;
-// import 'package:device_info_plus/device_info_plus.dart';
 import 'package:image_editor/screens/detail_screen.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:reorderable_grid_view/reorderable_grid_view.dart';

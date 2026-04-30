@@ -13,3 +13,23 @@ class CanvasSize {
     );
   }
 }
+
+class CanvasSizeModel {
+  final double width;
+  final double height;
+  final double ratio;
+
+  CanvasSizeModel({
+    required this.width,
+    required this.height,
+    required this.ratio,
+  });
+
+  factory CanvasSizeModel.fromJson(Map<String, dynamic> json) {
+    return CanvasSizeModel(
+      width: json['width'],
+      height: json['height'],
+      ratio: json['ratio'],
+    );
+  }
+}

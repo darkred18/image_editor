@@ -17,3 +17,57 @@ class PaintingDataModel {
       _$PaintingDataModelFromJson(json);
   Map<String, dynamic> toJson() => _$PaintingDataModelToJson(this);
 }
+
+class PaintColorModel {
+  final String name;
+  final String pigment;
+  final List<double> lab;
+
+  PaintColorModel({
+    required this.name,
+    required this.pigment,
+    required this.lab,
+  });
+
+  factory PaintColorModel.fromJson(Map<String, dynamic> json) {
+    return PaintColorModel(
+      name: json['name'] ?? 'Unknown',
+      pigment: json['pigment'] ?? 'Unknown',
+      lab: (json['lab'] as List).map((e) => (e as num).toDouble()).toList(),
+    );
+  }
+}
+
+class MixResultModel {
+  final PaintColorModel a;
+  final PaintColorModel b;
+  final PaintColorModel c;
+
+  final double wa;
+  final double wb;
+  final double wc;
+
+  final double distance;
+
+  MixResultModel({
+    required this.a,
+    required this.b,
+    required this.c,
+    required this.wa,
+    required this.wb,
+    required this.wc,
+    required this.distance,
+  });
+}
+
+class MixResultModel2 {
+  final List<PaintColorModel> paints;
+  final List<double> weights;
+  final double distance;
+
+  MixResultModel2({
+    required this.paints,
+    required this.weights,
+    required this.distance,
+  });
+}
