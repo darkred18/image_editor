@@ -11,18 +11,25 @@ class CanvasCore extends StatelessWidget {
   Widget build(BuildContext context) {
     return InteractiveViewer(
       transformationController: state.controller,
+      alignment: Alignment.center,
       maxScale: 20,
       minScale: 1,
       clipBehavior: Clip.none,
-      //줌/팬 할 때 ROI 다시 계산
       onInteractionUpdate: (_) {
-        onInteraction?.call(); // ROI 계산 트리거
+        state.handleZoomChange();
+        onInteraction?.call();
       },
+      // drawW×drawH 정확한 크기로 이미지 렌더링
+      // → imageOffsetX/Y가 InteractiveViewer 내부 레터박스 없이 0에 가까워짐
+      // → 그리드/ROI 오버레이 좌표와 정확히 일치
       child: Center(
         child: SizedBox(
           width: state.drawW,
           height: state.drawH,
-          child: Image.memory(state.imageBytes, fit: BoxFit.fill),
+          child: Image.memory(
+            state.imageBytes,
+            fit: BoxFit.fill, // drawW×drawH에 정확히 맞춤
+          ),
         ),
       ),
     );

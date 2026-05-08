@@ -149,41 +149,6 @@ class _CanvasCropExtendPageState extends State<CanvasCropExtendPage> {
     );
   }
 
-  // Future<void> _cropAndSaveImage() async {
-  //   final ExtendedImageEditorState? editorState = editorKey.currentState;
-
-  //   if (editorState == null || editorState.getCropRect() == null) {
-  //     print("편집기 상태가 유효하지 않거나 영역이 지정되지 않았습니다.");
-  //     return;
-  //   }
-
-  //   // 1. 사용자가 핸들로 조작한 영역(Rect) 가져오기
-  //   final Rect cropRect = editorState.getCropRect()!;
-
-  //   // 2. 현재 편집 중인 원본 이미지 데이터
-  //   final Uint8List rawData = editorState.rawImageData;
-
-  //   try {
-  //     // 🌟 extended_image에서 제공하는 내장 크롭 함수 사용
-  //     final Uint8List? croppedData = await cropImageDataWithDartUi(
-  //       settings: EditorCropLayerSettings(
-  //         cropRect: cropRect,
-  //       ),
-  //       image: rawData,
-  //     );
-
-  //     if (croppedData != null) {
-  //       // 3. 결과물(croppedData)을 파일로 저장하거나 서버로 전송
-  //       print("자르기 완료! 데이터 크기: ${croppedData.length}");
-
-  //       // 예: 서버 전송용 변수에 담기 또는 화면에 보여주기
-  //       // setState(() { _resultImage = croppedData; });
-  //     }
-  //   } catch (e) {
-  //     print("이미지 자르기 중 오류 발생: $e");
-  //   }
-  // }
-
   void _test(bool swaped) {
     print('test object.  swaped: $swaped');
     _sizeSwapped = swaped;
@@ -238,15 +203,6 @@ class _CanvasCropExtendPageState extends State<CanvasCropExtendPage> {
     // editorKey.currentState가 null이 아닐 때만 실행
     editorKey.currentState?.updateCropAspectRatio(ratio);
   }
-  // void _applyCanvasRatio() {
-  //   final size =
-  //       widget.canvasSize[_types![_picker.selectedIndexes[0]]]?[_items![_picker
-  //           .selectedIndexes[1]]];
-
-  //   final ratio = size!.width / size.height;
-  //   _aspectRatio = ratio;
-  //   editorKey.currentState?.updateCropAspectRatio(ratio);
-  // }
 
   void _finishEditing() async {
     // editorKey를 통해 현재 상태 가져오기
@@ -259,24 +215,5 @@ class _CanvasCropExtendPageState extends State<CanvasCropExtendPage> {
 
     // 3. 원본 이미지 데이터
     final Uint8List rawData = editorState.rawImageData;
-
-    // try {
-    //   // 🌟 여기서 호출하는 겁니다!
-    //   // 클래스 메서드가 아니므로 그냥 이름만 호출하거나
-    //   // 에러가 지속되면 패키지명을 확인해야 합니다.
-    //   // final Uint8List? croppedData = await cropImageDataWithDartUi(
-    //   //   settings: EditorCropLayerSettings(cropRect: cropRect),
-    //   //   image: rawData,
-    //   // );
-
-    //   // if (croppedData != null) {
-    //   //   print("자르기 성공! ${croppedData.length} 바이트");
-    //     // 여기서 croppedData를 활용하세요 (화면에 보여주거나 서버 전송)
-    //   }
-    // } catch (e) {
-    //   print("자르기 중 오류 발생: $e");
-    //   // 만약 여전히 'undefined'가 뜬다면, 패키지 버전이나
-    //   // 프로젝트에 해당 유틸리티 파일이 포함되어 있는지 확인해야 합니다.
-    // }
   }
 }

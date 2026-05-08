@@ -4,7 +4,6 @@ import 'dart:ui';
 import 'package:dartcv4/dartcv.dart' as cv;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-// import 'package:image_editor/edit/image_info.dart'; // 누락된 파일, 가정하여 사용
 import 'package:image_editor/screens/crop_image.dart'; // CanvasCropPage 경로// ImageEditorPage 경로
 import 'package:image_editor/screens/crop_image_extend.dart';
 import 'package:image_editor/screens/opencv/image_simplification_screen.dart';
@@ -58,6 +57,8 @@ class DetailScreen extends StatefulWidget {
 class _DetailScreenState extends State<DetailScreen> {
   late PageController _pageController;
   late int _currentIndex;
+
+  int _activeMode = 0; // 0: 뷰어, 1: 그리드, 2: ROI 분석 등
 
   bool showInfo = false;
   ImageInfoData? info;
@@ -280,6 +281,7 @@ class _DetailScreenState extends State<DetailScreen> {
       ),
       body: Stack(
         children: [
+          // 1층: 스와이프 가능한 이미지 레이어
           PhotoViewGallery.builder(
             backgroundDecoration: const BoxDecoration(
               color: Colors.black, // 원하는 색상으로 변경 (예: Colors.grey[900])

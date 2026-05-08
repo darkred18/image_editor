@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:image_editor/screens/detail_screen.dart';
+import 'package:image_editor/screens/edit_screen.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:reorderable_grid_view/reorderable_grid_view.dart';
 
@@ -41,10 +42,14 @@ class _GalleryScreenState extends State<GalleryScreen> {
                       reverseTransitionDuration: const Duration(
                         milliseconds: 500,
                       ),
-                      pageBuilder: (_, __, ___) => DetailScreen(
+                      pageBuilder: (_, __, ___) => EditorScreen(
                         imagePaths: widget.images.map((e) => e.path).toList(),
                         initialIndex: index,
                       ),
+                      // pageBuilder: (_, __, ___) => DetailScreen(
+                      //   imagePaths: widget.images.map((e) => e.path).toList(),
+                      //   initialIndex: index,
+                      // ),
                       transitionsBuilder: (_, animation, __, child) {
                         return FadeTransition(
                           opacity: animation,

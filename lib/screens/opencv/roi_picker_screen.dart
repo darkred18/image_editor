@@ -10,34 +10,6 @@ import 'package:image_editor/screens/core/image_editor_state.dart';
 import 'package:image_editor/screens/opencv/image_simplification_service.dart';
 import 'package:dartcv4/dartcv.dart' as cv;
 
-class RoiOverlay extends StatelessWidget {
-  final ImageEditorState state;
-
-  const RoiOverlay({super.key, required this.state});
-
-  @override
-  Widget build(BuildContext context) {
-    return Positioned(
-      left: state.roiPosition.dx,
-      top: state.roiPosition.dy,
-      child: GestureDetector(
-        onPanUpdate: (details) {
-          final newPos = state.roiPosition + details.delta;
-
-          state.updateRoi(newPos);
-        },
-        child: Container(
-          width: state.roiSize,
-          height: state.roiSize,
-          decoration: BoxDecoration(
-            border: Border.all(color: Colors.cyanAccent, width: 2),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
 class AdvancedRoiPicker extends StatefulWidget {
   final Uint8List imageBytes;
   // final ImageEditorState state;
