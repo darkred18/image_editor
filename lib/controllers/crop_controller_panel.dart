@@ -21,8 +21,10 @@ class CropTab extends StatefulWidget {
 }
 
 class _CropTabState extends State<CropTab> {
-  final _editorKey = GlobalKey<ExtendedImageEditorState>();
+  // _editorKey는 제거 — controller로 통합
+  final _editorController = ImageEditorController();
 
+  // _aspectRatio는 initEditorConfigHandler 초기값 전용 (setState 사용 안 함)
   double? _aspectRatio;
   bool _sizeSwapped = false;
 
@@ -37,6 +39,12 @@ class _CropTabState extends State<CropTab> {
   void initState() {
     super.initState();
     _loadSizes();
+  }
+
+  @override
+  void dispose() {
+    _editorController.dispose();
+    super.dispose();
   }
 
   Future<void> _loadSizes() async {
@@ -58,51 +66,43 @@ class _CropTabState extends State<CropTab> {
     setState(() {
       _canvasSize = parsed;
       _types = ['FREE', ...parsed.keys];
-      _items = parsed.values.first.keys.toList();
+      _items = parsed.isNotEmpty ? parsed.values.first.keys.toList() : [];
       _isLoading = false;
     });
   }
 
   // ── 비율 적용 ─────────────────────────────────────────────────
   void _applyRatio() {
-    if (_typeIndex == 0) {
-      _aspectRatio = null;
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        _editorKey.currentState?.updateCropAspectRatio(null);
-      });
-      return;
+    double? targetRatio;
+
+    if (_typeIndex != 0) {
+      final categoryKey = _types[_typeIndex];
+      final itemKey = _items.isNotEmpty ? _items[_itemIndex] : null;
+      if (itemKey != null) {
+        final size = _canvasSize[categoryKey]?[itemKey];
+        if (size != null) {
+          targetRatio = _sizeSwapped
+              ? size.height / size.width
+              : size.width / size.height;
+        }
+      }
     }
 
-    final categoryKey = _types[_typeIndex];
-    final itemKey = _items[_itemIndex];
-    final size = _canvasSize[categoryKey]?[itemKey];
-    if (size == null) return;
+    // _aspectRatio 변수도 최신값으로 유지 (LayoutBuilder 재호출 시 사용)
+    _aspectRatio = targetRatio;
 
-    // 스왑 여부에 따라 비율 계산
-    // 기본: width/height (가로가 긴 비율)
-    // 스왑: height/width (세로가 긴 비율)
-    final double ratio = _sizeSwapped
-        ? size.height / size.width
-        : size.width / size.height;
-
-    // _aspectRatio는 ExtendedImage 재생성 없이 updateCropAspectRatio로만 전달
-    // setState 없이 직접 업데이트 → 위젯 재생성 방지
-    _aspectRatio = ratio;
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _editorKey.currentState?.updateCropAspectRatio(ratio);
-    });
+    // controller로 비율 전달 → setState 없이 이미지 위치 유지
+    _editorController.updateCropAspectRatio(targetRatio);
   }
 
   // ── 크롭 완료 ─────────────────────────────────────────────────
   Future<void> _finishCrop() async {
-    final editorState = _editorKey.currentState;
-    if (editorState == null) return;
-
-    final cropRect = editorState.getCropRect();
+    final cropRect = _editorController.getCropRect();
     if (cropRect == null) return;
 
-    // ExtendedImage의 cropImageData로 실제 크롭 수행
-    final result = await cropImageDataWithNativeLibrary(state: editorState);
+    final result = await cropImageDataWithNativeLibrary(
+      state: _editorController.state!,
+    );
     if (result == null) return;
 
     widget.onCropDone(result);
@@ -120,30 +120,38 @@ class _CropTabState extends State<CropTab> {
       children: [
         // ── 이미지 에디터 영역 ──────────────────────────────────
         Expanded(
-          child: ExtendedImage.memory(
-            widget.state.imageBytes,
-            mode: ExtendedImageMode.editor,
-            extendedImageEditorKey: _editorKey,
-            fit: BoxFit.contain,
-            initGestureConfigHandler: (_) => GestureConfig(
-              minScale: 0.8,
-              maxScale: 8.0,
-              initialScale: 1.0,
-              inPageView: false,
-            ),
-            initEditorConfigHandler: (_) => EditorConfig(
-              cropAspectRatio: _aspectRatio,
-              maxScale: 8.0,
-              lineColor: Colors.cyanAccent.withOpacity(0.8),
-              lineHeight: 1.0,
-              cornerColor: Colors.cyanAccent,
-            ),
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              return ExtendedImage.memory(
+                widget.state.imageBytes,
+                // 크기가 바뀌면 ExtendedImage 재생성 → 크롭 rect도 새 크기로 초기화
+                key: ValueKey(
+                  '${constraints.maxWidth}x${constraints.maxHeight}',
+                ),
+                mode: ExtendedImageMode.editor,
+                fit: BoxFit.contain,
+                initGestureConfigHandler: (_) => GestureConfig(
+                  minScale: 0.8,
+                  maxScale: 8.0,
+                  initialScale: 1.0,
+                  inPageView: false,
+                ),
+                initEditorConfigHandler: (_) => EditorConfig(
+                  cropAspectRatio: _aspectRatio,
+                  controller: _editorController,
+                  maxScale: 8.0,
+                  lineColor: Colors.cyanAccent.withValues(alpha: 0.8),
+                  lineHeight: 1.0,
+                  cornerColor: Colors.cyanAccent,
+                ),
+              );
+            },
           ),
         ),
 
         // ── 하단 컨트롤 패널 ────────────────────────────────────
         Container(
-          constraints: const BoxConstraints(maxHeight: 240),
+          height: 240,
           padding: const EdgeInsets.fromLTRB(16, 10, 16, 20),
           decoration: const BoxDecoration(
             color: Color(0xFF1A1A1A),
@@ -167,7 +175,7 @@ class _CropTabState extends State<CropTab> {
                   ),
                 ),
 
-                // ── 타입 선택 (F, P, M ...) ──────────────────
+                // ── 타입 선택 ──────────────────────────────────
                 _SectionLabel(label: '캔버스 타입'),
                 const SizedBox(height: 8),
                 SizedBox(
@@ -183,7 +191,6 @@ class _CropTabState extends State<CropTab> {
                         setState(() {
                           _typeIndex = i;
                           _itemIndex = 0;
-                          // 타입 바뀌면 items 갱신
                           if (i > 0) {
                             final key = _types[i];
                             _items = _canvasSize[key]?.keys.toList() ?? [];

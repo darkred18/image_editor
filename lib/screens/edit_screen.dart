@@ -10,6 +10,8 @@ import 'package:image_editor/screens/core/image_editor_state.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:photo_view/photo_view_gallery.dart';
 
+enum EditorTab { crop, grid, colorAnalysis } // 탭 종류 정의
+
 class CanvasSizeEdit {
   final double width;
   final double height;
@@ -44,11 +46,22 @@ class EditorScreen extends StatefulWidget {
   State<EditorScreen> createState() => _EditorScreenState();
 }
 
-class _EditorScreenState extends State<EditorScreen> {
+class _EditorScreenState extends State<EditorScreen>
+    with SingleTickerProviderStateMixin {
   late ImageEditorState state;
   late PageController _pageController;
+  late AnimationController _panelController;
 
   int _currentIndex = 0;
+  bool _panelOpen = true;
+
+  // 1. 탭 데이터 정의 (StatelessWidget 내부나 별도 상수로 선언)
+  final List<Map<String, dynamic>> _editorTabs = [
+    {'index': EditorTab.crop, 'icon': Icons.crop, 'label': '크롭'},
+    {'index': EditorTab.grid, 'icon': Icons.grid_on, 'label': 'Grid'},
+    {'index': EditorTab.colorAnalysis, 'icon': Icons.palette, 'label': '색상 분석'},
+    // 나중에 기능을 추가하고 싶으면 여기만 줄 추가하면 끝!
+  ];
 
   @override
   void initState() {
@@ -56,13 +69,28 @@ class _EditorScreenState extends State<EditorScreen> {
     state = ImageEditorState();
     _currentIndex = widget.initialIndex;
     _pageController = PageController(initialPage: _currentIndex);
+    _panelController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 250),
+      value: 1.0, // 1.0 = 열림
+    );
     _loadImage();
   }
 
   @override
   void dispose() {
     _pageController.dispose();
+    _panelController.dispose();
     super.dispose();
+  }
+
+  void _togglePanel() {
+    if (_panelOpen) {
+      _panelController.reverse();
+    } else {
+      _panelController.forward();
+    }
+    _panelOpen = !_panelOpen;
   }
 
   Future<void> _loadImage() async {
@@ -108,7 +136,7 @@ class _EditorScreenState extends State<EditorScreen> {
                 return const Center(child: CircularProgressIndicator());
               }
               // ── 크롭 탭 ───────────────────────────────────────
-              if (state.isAnalysisMode && state.tabIndex == 3) {
+              if (state.isAnalysisMode && state.tabIndex == EditorTab.crop) {
                 return Column(
                   children: [
                     Expanded(
@@ -116,7 +144,7 @@ class _EditorScreenState extends State<EditorScreen> {
                         state: state,
                         onCropDone: (bytes) {
                           state.initWithBytes(bytes);
-                          state.setTabIndex(0);
+                          state.setTabIndex(EditorTab.crop);
                         },
                       ),
                     ),
@@ -131,14 +159,15 @@ class _EditorScreenState extends State<EditorScreen> {
                   Expanded(
                     child: LayoutBuilder(
                       builder: (context, imageConstraints) {
-                        WidgetsBinding.instance.addPostFrameCallback((_) {
-                          state.updateLayout(
-                            Size(
-                              imageConstraints.maxWidth,
-                              imageConstraints.maxHeight,
-                            ),
-                          );
-                        });
+                        final size = Size(
+                          imageConstraints.maxWidth,
+                          imageConstraints.maxHeight,
+                        );
+                        if (state.viewportSize != size) {
+                          WidgetsBinding.instance.addPostFrameCallback((_) {
+                            state.updateLayout(size);
+                          });
+                        }
                         return Stack(
                           fit: StackFit.expand,
                           children: [
@@ -153,7 +182,8 @@ class _EditorScreenState extends State<EditorScreen> {
                                 onInteraction: () => state.handleZoomChange(),
                               ),
                             ),
-                            if (state.isAnalysisMode)
+                            if (state.isAnalysisMode &&
+                                state.tabIndex != EditorTab.grid)
                               UnifiedOverlay(
                                 state: state,
                                 tabIndex: state.tabIndex,
@@ -164,32 +194,34 @@ class _EditorScreenState extends State<EditorScreen> {
                     ),
                   ),
 
-                  // 패널
                   if (state.isAnalysisMode)
-                    [
-                      // 탭 0 (ROI)
-                      RoiControlPanel(
-                        roiSize: state.roiSize,
-                        isMinimumCount: state.isMinimumCount,
-                        onSizeChanged: (v) => state.setRoiSize(v),
-                        onMinimumToggle: (v) => state.setMinimumMode(v),
-                        onAnalyze: () => state.updateRoiAnalysis(),
+                    SizedBox(
+                      height: 280,
+                      child: Builder(
+                        builder: (context) {
+                          // 현재 선택된 탭 인덱스에 따라 보여줄 패널을 결정합니다.
+                          switch (state.tabIndex) {
+                            case EditorTab.grid:
+                              return GridControlPanel(
+                                divisions: state.gridDivisions,
+                                isWidthBase: state.gridWidthBase,
+                                showGrid: state.showGrid,
+                                lineColor: state.gridColor,
+                                onDivisionsChanged: (v) =>
+                                    state.setGridDivisions(v),
+                                onWidthBaseChanged: (v) =>
+                                    state.setGridWidthBase(v),
+                                onShowGridChanged: (v) => state.setShowGrid(v),
+                                onColorChanged: (c) => state.setGridColor(c),
+                              );
+                            case EditorTab.colorAnalysis:
+                              return _PaintPanel(state: state);
+                            default:
+                              return const SizedBox.shrink();
+                          }
+                        },
                       ),
-                      // 탭 1 (Grid)
-                      GridControlPanel(
-                        divisions: state.gridDivisions,
-                        isWidthBase: state.gridWidthBase,
-                        showGrid: state.showGrid,
-                        lineColor: state.gridColor,
-                        onDivisionsChanged: (v) => state.setGridDivisions(v),
-                        onWidthBaseChanged: (v) => state.setGridWidthBase(v),
-                        onShowGridChanged: (v) => state.setShowGrid(v),
-                        onColorChanged: (c) => state.setGridColor(c),
-                      ),
-                      // 탭 2 (Paint) — 썸네일 + 색상 결과 + ROI 컨트롤
-                      _PaintPanel(state: state),
-                    ][state.tabIndex.clamp(0, 2)],
-
+                    ),
                   if (state.isAnalysisMode) _buildTabBar(),
                 ],
               );
@@ -205,21 +237,60 @@ class _EditorScreenState extends State<EditorScreen> {
       height: 60,
       color: Colors.black.withOpacity(0.8),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
-          _buildTabItem(0, Icons.filter_center_focus, "ROI"),
-          _buildTabItem(1, Icons.grid_on, "Grid"),
-          _buildTabItem(2, Icons.palette, "색상 분석"),
-          _buildTabItem(3, Icons.crop, "크롭"),
+          // 패널 토글 버튼
+          if (state.isAnalysisMode)
+            GestureDetector(
+              onTap: _togglePanel,
+              child: Container(
+                width: 44,
+                height: 60,
+                alignment: Alignment.center,
+                child: AnimatedRotation(
+                  turns: _panelOpen ? 0 : 0.5,
+                  duration: const Duration(milliseconds: 250),
+                  child: const Icon(
+                    Icons.keyboard_arrow_down,
+                    color: Colors.white54,
+                  ),
+                ),
+              ),
+            ),
+          Expanded(
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              // children: [
+              //   // _buildTabItem(0, Icons.filter_center_focus, "ROI"),
+              //   _buildTabItem(0, Icons.crop, "크롭"),
+              //   _buildTabItem(1, Icons.grid_on, "Grid"),
+              //   _buildTabItem(2, Icons.palette, "색상 분석"),
+              // ],
+              children: _editorTabs.map((tab) {
+                // 리스트를 돌면서 탭 아이템을 생성합니다.
+                return _buildTabItem(
+                  tab['index'] as EditorTab,
+                  tab['icon'] as IconData,
+                  tab['label'] as String,
+                );
+              }).toList(),
+            ),
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildTabItem(int index, IconData icon, String label) {
+  Widget _buildTabItem(EditorTab index, IconData icon, String label) {
     final isSelected = state.tabIndex == index;
     return GestureDetector(
-      onTap: () => state.setTabIndex(index), // setState 없이 state만 업데이트
+      onTap: () {
+        state.setTabIndex(index);
+        // 탭 전환 시 패널 자동 열기
+        if (!_panelOpen) {
+          _panelController.forward();
+          _panelOpen = true;
+        }
+      },
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [

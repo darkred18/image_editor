@@ -6,6 +6,7 @@ import 'package:dartcv4/dartcv.dart' as cv;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_editor/models/painting_data_model.dart';
+import 'package:image_editor/screens/edit_screen.dart';
 
 class ImageEditorState extends ChangeNotifier {
   //----------------------------------
@@ -22,6 +23,8 @@ class ImageEditorState extends ChangeNotifier {
 
   late int imgW = 0;
   late int imgH = 0;
+
+  Size viewportSize = Size.zero;
 
   //----------------------------------
   // 뷰 (줌/팬)
@@ -46,9 +49,9 @@ class ImageEditorState extends ChangeNotifier {
   //----------------------------------
   // 탭 상태 (패널과 오버레이 동기화)
   //----------------------------------
-  int tabIndex = 0;
+  EditorTab tabIndex = EditorTab.crop;
 
-  void setTabIndex(int v) {
+  void setTabIndex(EditorTab v) {
     tabIndex = v;
     notifyListeners();
   }
@@ -60,7 +63,7 @@ class ImageEditorState extends ChangeNotifier {
 
   void setAnalysisMode(bool v) {
     isAnalysisMode = v;
-    if (v) tabIndex = 0;
+    if (v) tabIndex = EditorTab.crop;
     notifyListeners();
   }
 
@@ -135,38 +138,83 @@ class ImageEditorState extends ChangeNotifier {
   //--------------------------------
   // 2. 레이아웃 업데이트 (나누기 0 방지 및 안전장치)
   //----------------------------------
+  // void updateLayout(Size size) {
+  //   if (viewportSize == size) return;
+
+  //   viewportSize = size;
+  //   _lastSize = size;
+
+  //   // 이미지 정보가 없거나 화면 크기가 정상적이지 않으면 중단
+  //   if (imgW == 0 || imgH == 0 || size.width == 0 || size.height == 0) return;
+
+  //   final containerAspect = size.width / size.height;
+  //   final imageAspect = imgW / imgH;
+
+  //   // 수치 에러 방지 (NaN 방지)
+  //   if (imageAspect.isNaN || imageAspect == 0) return;
+
+  //   double newDrawW, newDrawH;
+
+  //   if (containerAspect > imageAspect) {
+  //     newDrawH = size.height;
+  //     newDrawW = newDrawH * imageAspect;
+  //   } else {
+  //     newDrawW = size.width;
+  //     newDrawH = newDrawW / imageAspect;
+  //   }
+
+  //   // 값이 실제로 변했을 때만 업데이트하여 무한 루프 방지
+  //   if (drawW != newDrawW || drawH != newDrawH) {
+  //     drawW = newDrawW;
+  //     drawH = newDrawH;
+  //     imageOffsetX = (size.width - drawW) / 2;
+  //     imageOffsetY = (size.height - drawH) / 2;
+
+  //     // 레이아웃이 잡히면 분석도 초기화 (선택 사항)
+  //     // updateRoiAnalysis();
+
+  //     notifyListeners();
+  //   }
+  // }
   void updateLayout(Size size) {
-    _lastSize = size;
-    if (imgW == 0 || imgH == 0 || size.width == 0 || size.height == 0) return;
+    viewportSize = size;
+    _lastSize = size; // 👈 이 줄을 추가하여 ROI 업데이트 시 체크를 통과하게 합니다.
+    // 1. 이미지 비율과 화면 비율 계산
+    double aspectRatio = imgW / imgH;
+    double viewRatio = size.width / size.height;
 
-    final containerAspect = size.width / size.height;
-    final imageAspect = imgW / imgH;
-
-    double newDrawW, newDrawH;
-
-    if (containerAspect > imageAspect) {
-      newDrawH = size.height;
-      newDrawW = newDrawH * imageAspect;
+    // 2. 화면에 꽉 채우기 위한 Scale 계산 (BoxFit.contain과 유사한 원리)
+    double scale;
+    if (aspectRatio > viewRatio) {
+      // 이미지가 더 가로로 긴 경우 -> 너비 기준
+      scale = size.width / imgW;
     } else {
-      newDrawW = size.width;
-      newDrawH = newDrawW / imageAspect;
+      // 이미지가 더 세로로 긴 경우 -> 높이 기준
+      scale = size.height / imgH;
     }
 
-    // 🎯 오차 범위를 두어 무한 notifyListeners 방지
-    if ((drawW - newDrawW).abs() > 0.1 || (drawH - newDrawH).abs() > 0.1) {
-      drawW = newDrawW;
-      drawH = newDrawH;
-      imageOffsetX = (size.width - drawW) / 2;
-      imageOffsetY = (size.height - drawH) / 2;
+    drawW = imgW.toDouble();
+    drawH = imgH.toDouble();
 
-      // 레이아웃이 변하면 줌 상태를 초기화하거나 ROI 위치를 재조정할 수 있음
-      notifyListeners();
-    }
+    // 3. 초기 Matrix 설정 (Alignment.topLeft 기준이므로 꽉 차게 보이도록 스케일 적용)
+    // 만약 중앙 정렬을 원하시면 translation 값도 추가해야 하지만,
+    // 현재 CanvasCore가 topLeft 기준이므로 scale만 주어도 꽉 차게 시작합니다.
+
+    // controller.value = Matrix4.identity()..scaleByDouble(scale, scale, 1.0);
+    controller.value = Matrix4.diagonal3Values(scale, scale, 1.0);
+
+    notifyListeners();
   }
 
   //----------------------------------
-  void updateRoi(Offset pos) {
-    roiPosition = pos;
+  void updateRoi(Offset newPos) {
+    if (_lastSize == null) return;
+
+    roiPosition = Offset(
+      newPos.dx.clamp(0.0, _lastSize!.width - roiSize),
+
+      newPos.dy.clamp(0.0, _lastSize!.height - roiSize),
+    );
     updateRoiAnalysis();
     notifyListeners();
   }
@@ -236,74 +284,73 @@ class ImageEditorState extends ChangeNotifier {
   // 3. ROI 분석 로직 (비정상적인 스케일/오프셋 방어)
   //----------------------------------
   void updateRoiAnalysis() {
-    // 0으로 나누기 방지
     if (!isImageReady || drawW <= 0 || drawH <= 0 || imgW == 0 || imgH == 0)
       return;
 
     try {
+      // 1. 현재 InteractiveViewer의 변환 상태(Matrix) 가져오기
       final matrix = controller.value;
+      final double scale = matrix.getMaxScaleOnAxis();
+
+      // ROI 화면 좌표
       final roiCenter = Offset(
-        roiPosition.dx + roiSize / 2,
-        roiPosition.dy + roiSize / 2,
+        roiPosition.dx + (roiSize / 2),
+        roiPosition.dy + (roiSize / 2),
       );
 
-      final inv = Matrix4.inverted(matrix);
-      final t = MatrixUtils.transformPoint(inv, roiCenter);
+      // 역행렬
+      final inverseMatrix = Matrix4.inverted(matrix);
 
-      // InteractiveViewer가 Alignment.center이므로
-      // 레터박스 offset(imageOffsetX/Y)을 빼서 이미지 내부 좌표로 변환
-      final imageX = (t.dx - imageOffsetX).clamp(0.0, drawW);
-      final imageY = (t.dy - imageOffsetY).clamp(0.0, drawH);
+      // 이미지 로컬 좌표
+      final localPoint = MatrixUtils.transformPoint(inverseMatrix, roiCenter);
 
-      // 실제 이미지 픽셀 좌표 계산
-      final px = (imageX / drawW * imgW).toInt();
-      final py = (imageY / drawH * imgH).toInt();
+      final double localX = localPoint.dx;
+      final double localY = localPoint.dy;
 
-      double scale = matrix.getMaxScaleOnAxis();
-      if (scale <= 0) scale = 1.0;
+      // 원본 이미지 픽셀 변환
+      final px = (localX / drawW * imgW).toInt();
+      final py = (localY / drawH * imgH).toInt();
 
-      // ROI 크기를 이미지 픽셀 단위로 환산
-      final size = (roiSize / scale) * (imgW / drawW);
-      final pw = size.toInt().clamp(1, imgW);
-      final ph = size.toInt().clamp(1, imgH);
+      // 5. 줌 배율을 고려한 크롭 사이즈 (화면에서 보이는 크기만큼 픽셀로 환산)
+      final double pixelRoiSize = (roiSize / scale) * (imgW / drawW);
+      final pw = pixelRoiSize.toInt().clamp(1, imgW);
+      final ph = pixelRoiSize.toInt().clamp(1, imgH);
 
+      // 6. 경계값 계산 및 크롭
       final cutX = (px - pw ~/ 2).clamp(0, imgW - pw);
       final cutY = (py - ph ~/ 2).clamp(0, imgH - ph);
 
-      // OpenCV 작업 영역
+      // 6. OpenCV 영역 추출 및 업데이트
       final cropped = srcMat.region(cv.Rect(cutX, cutY, pw, ph)).clone();
-      if (cropped.isEmpty) return;
+      if (!cropped.isEmpty) {
+        final (_, encoded) = cv.imencode(".jpg", cropped);
 
-      final (_, encoded) = cv.imencode(".jpg", cropped);
+        final rgbMean = cv.mean(cropped);
+        final rgbColor = Color.fromARGB(
+          255,
+          rgbMean.val[2].round(),
+          rgbMean.val[1].round(),
+          rgbMean.val[0].round(),
+        );
 
-      final rgbMean = cv.mean(cropped);
+        final labMat = cv.cvtColor(cropped, cv.COLOR_BGR2Lab);
+        final labMean = cv.mean(labMat);
+        final targetLab = [
+          labMean.val[0] * 100 / 255,
+          labMean.val[1] - 128,
+          labMean.val[2] - 128,
+        ];
 
-      final rgbColor = Color.fromARGB(
-        255,
-        rgbMean.val[2].round(),
-        rgbMean.val[1].round(),
-        rgbMean.val[0].round(),
-      );
+        croppedPreview = encoded;
+        extractedColor = rgbColor;
+        recommendedPaints = recommendPaints(targetLab);
+        bestMix = findBestMix(targetLab);
 
-      final labMat = cv.cvtColor(cropped, cv.COLOR_BGR2Lab);
+        cropped.dispose();
+        labMat.dispose();
 
-      final labMean = cv.mean(labMat);
-
-      final targetLab = [
-        labMean.val[0] * 100 / 255,
-        labMean.val[1] - 128,
-        labMean.val[2] - 128,
-      ];
-
-      croppedPreview = encoded;
-      extractedColor = rgbColor;
-      recommendedPaints = recommendPaints(targetLab);
-      bestMix = findBestMix(targetLab);
-
-      cropped.dispose();
-      labMat.dispose();
-
-      notifyListeners();
+        notifyListeners();
+      }
     } catch (e) {
       debugPrint("Analysis Error: $e");
     }

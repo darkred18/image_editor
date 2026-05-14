@@ -1,120 +1,131 @@
 import 'package:flutter/material.dart';
+import 'package:image_editor/screens/core/image_editor_state.dart';
 
 class RoiControlPanel extends StatelessWidget {
-  final double roiSize;
-  final bool isMinimumCount;
+  final ImageEditorState state; // preview 데이터 접근을 위해 state 전체를 전달받음
 
-  final ValueChanged<double> onSizeChanged;
-  final ValueChanged<bool> onMinimumToggle;
-  final VoidCallback onAnalyze;
-
-  const RoiControlPanel({
-    super.key,
-    required this.roiSize,
-    required this.isMinimumCount,
-    required this.onSizeChanged,
-    required this.onMinimumToggle,
-    required this.onAnalyze,
-  });
+  const RoiControlPanel({super.key, required this.state});
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      // height: 200, // ❌ 고정 높이는 기기마다 Overflow의 원인이 됩니다.
-      constraints: const BoxConstraints(maxHeight: 250), // ✅ 최대 높이만 제한
-      padding: const EdgeInsets.fromLTRB(20, 10, 20, 20), // 상단 여백 조절
-      decoration: const BoxDecoration(
-        color: Color(0xFF1A1A1A),
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-        // 하이테크한 느낌을 위해 약간의 그림자 추가
-        boxShadow: [
-          BoxShadow(color: Colors.black54, blurRadius: 10, spreadRadius: 2),
-        ],
-      ),
-      child: SingleChildScrollView(
-        // ✅ 내용이 길어질 경우를 대비해 스크롤 허용
-        child: Column(
-          mainAxisSize: MainAxisSize.min, // ✅ 자식 크기만큼만 높이 차지
-          children: [
-            // 드래그 핸들 (패널 느낌 강조)
-            Container(
-              width: 40,
-              height: 4,
-              margin: const EdgeInsets.only(bottom: 20),
-              decoration: BoxDecoration(
-                color: Colors.white24,
-                borderRadius: BorderRadius.circular(2),
-              ),
+      // 🎯 높이를 고정하여 하단 UI 변화로 인한 화면 흔들림 방지
+      height: 280,
+      padding: const EdgeInsets.fromLTRB(20, 10, 20, 20),
+      color: const Color(0xFF1A1A1A),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // 드래그 핸들
+          Container(
+            width: 40,
+            height: 4,
+            margin: const EdgeInsets.only(bottom: 15),
+            decoration: BoxDecoration(
+              color: Colors.white24,
+              borderRadius: BorderRadius.circular(2),
             ),
+          ),
 
-            // ROI 크기 조절 섹션
-            Row(
-              children: [
-                const SizedBox(
-                  width: 70, // 텍스트 영역 너비 고정으로 슬라이더 정렬
-                  child: Text(
-                    "ROI 크기",
-                    style: TextStyle(color: Colors.white70),
-                  ),
+          // 🎯 신규 추가: ROI 프리뷰 영역 (색상분석 패널 디자인 유지)
+          Row(
+            children: [
+              Container(
+                width: 80,
+                height: 80,
+                decoration: BoxDecoration(
+                  border: Border.all(color: Colors.cyanAccent.withOpacity(0.5)),
+                  borderRadius: BorderRadius.circular(8),
+                  color: Colors.black,
                 ),
-                Expanded(
-                  child: SliderTheme(
-                    data: SliderTheme.of(context).copyWith(
-                      activeTrackColor: Colors.amber, // 하이테크한 노란색 포인트
-                      thumbColor: Colors.amber,
-                      overlayColor: Colors.amber.withOpacity(0.2),
-                    ),
-                    child: Slider(
-                      value: roiSize,
-                      min: 20,
-                      max: 120,
-                      divisions: 10, // 조금 더 세밀하게 조정
-                      onChanged: onSizeChanged,
-                    ),
-                  ),
-                ),
-                SizedBox(
-                  width: 30,
-                  child: Text(
-                    "${roiSize.toInt()}",
-                    style: const TextStyle(
-                      color: Colors.white,
+                child: state.croppedPreview != null
+                    ? ClipRRect(
+                        borderRadius: BorderRadius.circular(7),
+                        child: Image.memory(
+                          state.croppedPreview!,
+                          fit: BoxFit.cover,
+                        ),
+                      )
+                    : const Icon(
+                        Icons.center_focus_weak,
+                        color: Colors.white24,
+                      ),
+              ),
+              const SizedBox(width: 15),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    "현재 선택 영역",
+                    style: TextStyle(
+                      color: Colors.cyanAccent,
+                      fontSize: 12,
                       fontWeight: FontWeight.bold,
                     ),
-                    textAlign: TextAlign.end,
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    "크기: ${state.roiSize.toInt()} px",
+                    style: const TextStyle(color: Colors.white70, fontSize: 14),
+                  ),
+                  Text(
+                    "상태: ${state.isMinimumCount ? '최소 혼합' : '일반 분석'}",
+                    style: const TextStyle(color: Colors.white38, fontSize: 11),
+                  ),
+                ],
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 20),
+
+          // ROI 크기 조절 슬라이더
+          Row(
+            children: [
+              const Text("크기 조절", style: TextStyle(color: Colors.white70)),
+              Expanded(
+                child: SliderTheme(
+                  data: SliderTheme.of(context).copyWith(
+                    activeTrackColor: Colors.amber,
+                    thumbColor: Colors.amber,
+                  ),
+                  child: Slider(
+                    value: state.roiSize,
+                    min: 20,
+                    max: 120,
+                    onChanged: (v) => state.setRoiSize(v),
                   ),
                 ),
-              ],
-            ),
-
-            const SizedBox(height: 10),
-
-            //--------------------------------
-            // 최소 색 조합 모드
-            //--------------------------------
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text("최소 혼합 모드", style: TextStyle(color: Colors.white70)),
-                Switch(value: isMinimumCount, onChanged: onMinimumToggle),
-              ],
-            ),
-
-            const SizedBox(height: 20),
-
-            //--------------------------------
-            // 분석 버튼
-            //--------------------------------
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: onAnalyze,
-                style: ElevatedButton.styleFrom(backgroundColor: Colors.orange),
-                child: const Text("ROI 분석 다시 실행"),
               ),
+            ],
+          ),
+
+          // 최소 색 조합 모드 스위치
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text("최소 혼합 모드", style: TextStyle(color: Colors.white70)),
+              Switch(
+                value: state.isMinimumCount,
+                onChanged: (v) => state.setMinimumMode(v),
+                activeColor: Colors.amber,
+              ),
+            ],
+          ),
+
+          const Spacer(),
+
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: () => state.updateRoiAnalysis(),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.deepOrange,
+              ),
+              child: const Text("영역 확정 및 분석"),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
