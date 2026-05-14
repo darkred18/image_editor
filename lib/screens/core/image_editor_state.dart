@@ -23,6 +23,7 @@ class ImageEditorState extends ChangeNotifier {
 
   late int imgW = 0;
   late int imgH = 0;
+  double minScale = 1.0; // 추가
 
   Size viewportSize = Size.zero;
 
@@ -135,47 +136,6 @@ class ImageEditorState extends ChangeNotifier {
     paintDB = data.map((e) => PaintColorModel.fromJson(e)).toList();
   }
 
-  //--------------------------------
-  // 2. 레이아웃 업데이트 (나누기 0 방지 및 안전장치)
-  //----------------------------------
-  // void updateLayout(Size size) {
-  //   if (viewportSize == size) return;
-
-  //   viewportSize = size;
-  //   _lastSize = size;
-
-  //   // 이미지 정보가 없거나 화면 크기가 정상적이지 않으면 중단
-  //   if (imgW == 0 || imgH == 0 || size.width == 0 || size.height == 0) return;
-
-  //   final containerAspect = size.width / size.height;
-  //   final imageAspect = imgW / imgH;
-
-  //   // 수치 에러 방지 (NaN 방지)
-  //   if (imageAspect.isNaN || imageAspect == 0) return;
-
-  //   double newDrawW, newDrawH;
-
-  //   if (containerAspect > imageAspect) {
-  //     newDrawH = size.height;
-  //     newDrawW = newDrawH * imageAspect;
-  //   } else {
-  //     newDrawW = size.width;
-  //     newDrawH = newDrawW / imageAspect;
-  //   }
-
-  //   // 값이 실제로 변했을 때만 업데이트하여 무한 루프 방지
-  //   if (drawW != newDrawW || drawH != newDrawH) {
-  //     drawW = newDrawW;
-  //     drawH = newDrawH;
-  //     imageOffsetX = (size.width - drawW) / 2;
-  //     imageOffsetY = (size.height - drawH) / 2;
-
-  //     // 레이아웃이 잡히면 분석도 초기화 (선택 사항)
-  //     // updateRoiAnalysis();
-
-  //     notifyListeners();
-  //   }
-  // }
   void updateLayout(Size size) {
     viewportSize = size;
     _lastSize = size; // 👈 이 줄을 추가하여 ROI 업데이트 시 체크를 통과하게 합니다.
@@ -200,7 +160,9 @@ class ImageEditorState extends ChangeNotifier {
     // 만약 중앙 정렬을 원하시면 translation 값도 추가해야 하지만,
     // 현재 CanvasCore가 topLeft 기준이므로 scale만 주어도 꽉 차게 시작합니다.
 
-    // controller.value = Matrix4.identity()..scaleByDouble(scale, scale, 1.0);
+    // scale 계산 후 minScale도 저장
+    minScale = scale; // 추가
+
     controller.value = Matrix4.diagonal3Values(scale, scale, 1.0);
 
     notifyListeners();

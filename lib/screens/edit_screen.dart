@@ -195,31 +195,36 @@ class _EditorScreenState extends State<EditorScreen>
                   ),
 
                   if (state.isAnalysisMode)
-                    SizedBox(
-                      height: 280,
-                      child: Builder(
-                        builder: (context) {
-                          // 현재 선택된 탭 인덱스에 따라 보여줄 패널을 결정합니다.
-                          switch (state.tabIndex) {
-                            case EditorTab.grid:
-                              return GridControlPanel(
-                                divisions: state.gridDivisions,
-                                isWidthBase: state.gridWidthBase,
-                                showGrid: state.showGrid,
-                                lineColor: state.gridColor,
-                                onDivisionsChanged: (v) =>
-                                    state.setGridDivisions(v),
-                                onWidthBaseChanged: (v) =>
-                                    state.setGridWidthBase(v),
-                                onShowGridChanged: (v) => state.setShowGrid(v),
-                                onColorChanged: (c) => state.setGridColor(c),
-                              );
-                            case EditorTab.colorAnalysis:
-                              return _PaintPanel(state: state);
-                            default:
-                              return const SizedBox.shrink();
-                          }
-                        },
+                    SizeTransition(
+                      sizeFactor: _panelController,
+                      axisAlignment: -1.0,
+                      child: SizedBox(
+                        height: 280,
+                        child: Builder(
+                          builder: (context) {
+                            // 현재 선택된 탭 인덱스에 따라 보여줄 패널을 결정합니다.
+                            switch (state.tabIndex) {
+                              case EditorTab.grid:
+                                return GridControlPanel(
+                                  divisions: state.gridDivisions,
+                                  isWidthBase: state.gridWidthBase,
+                                  showGrid: state.showGrid,
+                                  lineColor: state.gridColor,
+                                  onDivisionsChanged: (v) =>
+                                      state.setGridDivisions(v),
+                                  onWidthBaseChanged: (v) =>
+                                      state.setGridWidthBase(v),
+                                  onShowGridChanged: (v) =>
+                                      state.setShowGrid(v),
+                                  onColorChanged: (c) => state.setGridColor(c),
+                                );
+                              case EditorTab.colorAnalysis:
+                                return _PaintPanel(state: state);
+                              default:
+                                return const SizedBox.shrink();
+                            }
+                          },
+                        ),
                       ),
                     ),
                   if (state.isAnalysisMode) _buildTabBar(),
@@ -238,24 +243,6 @@ class _EditorScreenState extends State<EditorScreen>
       color: Colors.black.withOpacity(0.8),
       child: Row(
         children: [
-          // 패널 토글 버튼
-          if (state.isAnalysisMode)
-            GestureDetector(
-              onTap: _togglePanel,
-              child: Container(
-                width: 44,
-                height: 60,
-                alignment: Alignment.center,
-                child: AnimatedRotation(
-                  turns: _panelOpen ? 0 : 0.5,
-                  duration: const Duration(milliseconds: 250),
-                  child: const Icon(
-                    Icons.keyboard_arrow_down,
-                    color: Colors.white54,
-                  ),
-                ),
-              ),
-            ),
           Expanded(
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -273,6 +260,21 @@ class _EditorScreenState extends State<EditorScreen>
                   tab['label'] as String,
                 );
               }).toList(),
+            ),
+          ),
+          // 패널 토글 버튼
+          // if (state.isAnalysisMode)s
+          GestureDetector(
+            onTap: _togglePanel,
+            child: Container(
+              width: 44,
+              height: 60,
+              alignment: Alignment.center,
+              child: AnimatedRotation(
+                turns: _panelOpen ? 0 : 0.5,
+                duration: const Duration(milliseconds: 250),
+                child: const Icon(Icons.keyboard_arrow_down, color: Colors.red),
+              ),
             ),
           ),
         ],
@@ -357,7 +359,6 @@ class _PaintPanel extends StatelessWidget {
                 ),
               ),
             ),
-
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
